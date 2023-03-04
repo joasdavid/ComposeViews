@@ -5,6 +5,7 @@ plugins {
 
 android {
     namespace 'com.joasvpereira.lib.compose'
+    version "1.0.0-alpha"
     compileSdk 33
 
     defaultConfig {
