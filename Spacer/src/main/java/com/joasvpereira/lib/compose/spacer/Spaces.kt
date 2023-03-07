@@ -16,30 +16,30 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SimpleSpacer(size: Dp) {
+fun SimpleSpace(size: Dp) {
     Spacer(modifier = Modifier.size(size))
 }
 
 @Composable
-fun VerticalSpacer(height: Dp) {
+fun VerticalSpace(height: Dp) {
     Spacer(modifier = Modifier.height(height))
 }
 
 @Composable
-fun HorizontalSpacer(width: Dp) {
+fun HorizontalSpace(width: Dp) {
     Spacer(modifier = Modifier.width(width))
 }
 
 @Preview
 @Composable
-private fun SimpleSpacerPreview() {
+private fun SpacesPreview() {
     Column(modifier = Modifier.background(Color.Red)) {
-        SimpleSpacer(size = 45.dp)
+        SimpleSpace(size = 45.dp)
         Row {
             Box(modifier = Modifier.size(25.dp).background(Color.Green))
-            HorizontalSpacer(width = 25.dp)
+            HorizontalSpace(width = 25.dp)
             Box(modifier = Modifier.size(25.dp).background(Color.Green))
         }
-        VerticalSpacer(height = 45.dp)
+        VerticalSpace(height = 45.dp)
     }
 }
