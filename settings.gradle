@@ -16,3 +16,4 @@ rootProject.name = "ComposeViews"
 include ':app'
 include ':DropDownSelector'
 include ':Spacer'
+include ':NamedShield'
