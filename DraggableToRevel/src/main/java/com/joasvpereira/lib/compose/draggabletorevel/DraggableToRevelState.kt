@@ -15,15 +15,15 @@ class DraggableToRevelState(
     val direction: RevelDirection,
 ) {
 
-    internal var maxGap by mutableStateOf(0f)
+    internal var maxDrag by mutableStateOf(0f)
     internal var isDragging: Boolean by mutableStateOf(false)
     private var offsetX = mutableStateOf(offsetXInit)
     private val onDelta: (Float) -> Unit = {
         val finalValue = offsetX.value + it
         offsetX.value = valueBetween(
             currentValue = finalValue,
-            max = if (direction == RevelDirection.RIGHT) 0f else maxGap,
-            min = if (direction == RevelDirection.RIGHT) 0 - maxGap else 0f,
+            max = if (direction == RevelDirection.RIGHT) 0f else maxDrag,
+            min = if (direction == RevelDirection.RIGHT) 0 - maxDrag else 0f,
         )
     }
     private var onDeltaState = mutableStateOf(onDelta)
@@ -32,7 +32,7 @@ class DraggableToRevelState(
 
     @Suppress("MemberVisibilityCanBePrivate")
     suspend fun endPosition() {
-        if (abs(offsetX.value) > maxGap / 3) {
+        if (abs(offsetX.value) > maxDrag / 3) {
             open()
         } else {
             close()
@@ -59,7 +59,7 @@ class DraggableToRevelState(
     @Suppress("MemberVisibilityCanBePrivate")
     suspend fun open() {
         val anim = AnimationState(offsetX.value)
-        anim.animateTo(if (direction == RevelDirection.LEFT) maxGap else 0 - maxGap) {
+        anim.animateTo(if (direction == RevelDirection.LEFT) maxDrag else 0 - maxDrag) {
             offsetX.value = this.value
         }
     }
