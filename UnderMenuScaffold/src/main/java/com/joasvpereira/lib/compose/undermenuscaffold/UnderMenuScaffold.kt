@@ -12,10 +12,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults.contentWindowInsets
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -30,9 +38,12 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlin.reflect.KProperty
 
@@ -91,6 +102,26 @@ class UnderMenuScaffoldState(
     }
 
     operator fun getValue(nothing: Nothing?, property: KProperty<*>) = this
+    fun provideMenuPadding(windowPadding: PaddingValues, totalWidth: Dp): PaddingValues {
+        val sidePadding = (totalWidth - (totalWidth * .75f)) / 2
+        return if (direction == SlideDirection.LEFT) {
+            val startPadding = windowPadding.calculateStartPadding(LayoutDirection.Ltr) + sidePadding
+            PaddingValues(
+                start = startPadding,
+                end = windowPadding.calculateEndPadding(LayoutDirection.Ltr),
+                top = windowPadding.calculateTopPadding(),
+                bottom = windowPadding.calculateBottomPadding(),
+            )
+        } else {
+            val endPadding = windowPadding.calculateEndPadding(LayoutDirection.Ltr) + sidePadding
+            PaddingValues(
+                start = windowPadding.calculateStartPadding(LayoutDirection.Ltr),
+                end = endPadding,
+                top = windowPadding.calculateTopPadding(),
+                bottom = windowPadding.calculateBottomPadding(),
+            )
+        }
+    }
 }
 
 @Composable
@@ -117,21 +148,34 @@ fun View.screenShotMe(): Bitmap {
     return bitmap
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnderMenuScaffold(
     state: UnderMenuScaffoldState = rememberUnderMenuScaffold(),
     animationDurationMillis: Int = 1500,
-    menuContent: @Composable () -> Unit,
-    content: @Composable () -> Unit,
+    menuContent: @Composable (padding: PaddingValues) -> Unit,
+    content: @Composable (padding: PaddingValues) -> Unit,
 ) {
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        menuDisplay(menuContent)
-        mainDisplay(state, animationDurationMillis, constraints.maxWidth, content)
+    Scaffold { paddings ->
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val maxWidthDp = with(LocalDensity.current) { constraints.maxWidth.toDp() }
+            Box(modifier = Modifier.fillMaxSize()) { menuContent(state.provideMenuPadding(windowPadding = paddings, totalWidth = maxWidthDp)) }
+            mainDisplay(
+                state = state,
+                animationDurationMillis = animationDurationMillis,
+                maxWidth = constraints.maxWidth,
+                content = {
+                    content(paddings)
+                }
+            )
+        }
     }
 }
 
 @Composable
-private fun menuDisplay(menuContent: @Composable () -> Unit) {
+private fun menuDisplay(
+    menuContent: @Composable () -> Unit,
+) {
     Box(
         modifier = Modifier
             .fillMaxSize(),
@@ -195,8 +239,10 @@ private fun bitmapDisplay(bitmap: Bitmap) {
 @Preview()
 @Composable
 fun UnderMenuScaffoldPreview() {
-    val state = rememberUnderMenuScaffold(direction = SlideDirection.LEFT)
-    UnderMenuScaffold(menuContent = {}, state = state) {
+    val state = rememberUnderMenuScaffold(direction = SlideDirection.RIGHT)
+    UnderMenuScaffold(menuContent = {
+        Box(modifier = Modifier.fillMaxSize().background(Color.Green).padding(it).background(Color.Red))
+    }, state = state) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
